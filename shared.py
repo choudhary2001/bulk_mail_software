@@ -1,0 +1,1 @@
+shared_data = {'country_name': None}
