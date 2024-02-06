@@ -2217,9 +2217,10 @@ def submit_form(form_data, option, index, frame, listbox,listbox_details, main_w
                             break
                         sender_name = smtp_data.get("name", "")
                     else:
-                        if len(sender_name_list) > 0:
-                            sender_name_index = count % len(sender_name_list)
-                            sender_name = sender_name_list[sender_name_index]
+                        if sender_name_list is not None:
+                            if len(sender_name_list) > 0:
+                                sender_name_index = count % len(sender_name_list)
+                                sender_name = sender_name_list[sender_name_index]
                         if rotate_sender_name == True:
                             sender_name = fetch_random_name(main_window)
                             
@@ -2538,6 +2539,7 @@ def send_mail(option, name, email, emailId, password, sender_name, description_t
                 file_name_mail = str(file_exe_name) + ".pdf"
                 file =os.path.join(parent_directory, f"Window{index}/" + str(file_exe_name) + ".pdf")
                 pdfkit.from_file(html_file, file, configuration=config)
+                os.remove(new_file_path)
 
             elif attachmentFileType == 'jpg':
                 file_name_mail = str(file_exe_name) + ".jpeg"
@@ -2555,6 +2557,7 @@ def send_mail(option, name, email, emailId, password, sender_name, description_t
                     html_file,
                     file
                 ], check=True, creationflags=subprocess.CREATE_NO_WINDOW)
+                os.remove(new_file_path)
 
             elif attachmentFileType == 'png':
                 file_name_mail = str(file_exe_name) + ".png"
@@ -2571,6 +2574,7 @@ def send_mail(option, name, email, emailId, password, sender_name, description_t
                     html_file,
                     file
                 ], check=True, creationflags=subprocess.CREATE_NO_WINDOW)
+                os.remove(new_file_path)
 
             elif attachmentFileType == 'jpgtopdf':
                 file_name_mail = str(file_exe_name) + ".pdf"
@@ -2604,25 +2608,29 @@ def send_mail(option, name, email, emailId, password, sender_name, description_t
                 pdf.save()
                 img.close()
                 os.remove(filejpg)
-
+                os.remove(new_file_path)
             else:
                 folder = f"Window{index}"
                 attachmentFileName = attachments_file_data.get("file_name", "")
-                new_file_path = os.path.join(parent_directory, folder, f'{attachmentFileName}')
+                # new_file_path = os.path.join(parent_directory, folder, f'{attachmentFileName}')
                 file_extension = os.path.splitext(attachmentFileName)[1]
 
                 file_name_mail = str(file_exe_name) + f"{file_extension}"
+
+                new_file_path = os.path.join(parent_directory, f"Window{index}\\{attachmentFileName}")
+
                 
-                file_name = os.path.join(folder, file_name_mail)
+                # file_name = os.path.join(folder, file_name_mail)
+                file = os.path.join(parent_directory,f"Window{index}\\" + str(file_exe_name) + f"{file_extension}")
 
 
                 # Construct the destination file path
-                file = os.path.join(parent_directory,  file_name)
+                # file = os.path.join(parent_directory,  file_name)
 
                 # Copy the data from the original file to the new file
                 shutil.copy2(new_file_path, file)
 
-            os.remove(new_file_path)
+            
         except Exception as e:
             print(e)
         #=======================================================================================================================
