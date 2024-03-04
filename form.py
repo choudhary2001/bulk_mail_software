@@ -357,8 +357,8 @@ def check_submit_form(option, frame, f, root, index, smtp_server_var, port_entry
             except Exception as e:
                 messagebox.showerror("Error", f"Error in Sending Mail : {e}.")
 
-    else:
-        error_label.config(text="Please fill in all required fields.")
+    # else:
+    #     error_label.config(text="Please fill in all required fields.")
 
 
 def save_submit_form(option, frame, f, root, index, smtp_server_var, port_entry, auth_var, ssl_var, username_entry, password_entry, sender_name_entry, smtp_form_window):
@@ -1558,6 +1558,23 @@ def create_email_form(root, option, index, main_window):
     listbox_details = tk.Listbox(frame, height=10, width=150)
     listbox_details.grid(row=17, column=0, rowspan=3, columnspan=5, pady=10, sticky=tk.W)
 
+    def update_listbox():
+        # Replace this with your logic to update the listbox data
+        # For example, you can use listbox_details.insert(tk.END, "New Data")
+        pass
+
+    def on_configure(event):
+        # Auto-scroll the listbox when the content changes
+        listbox_details.yview_scroll(1, "units")
+
+    # Bind the configure event to the auto-scroll function
+    listbox_details.bind("<Configure>", on_configure)
+
+    # Call the function to update listbox data (replace this with your data update logic)
+    update_listbox()
+
+
+
     listbox = ttk.Label(frame, foreground="white", background="#333333", text="")
     listbox.grid(row=14, column=8, rowspan=2, pady=10, padx=10, sticky="ew")
 
@@ -1842,7 +1859,7 @@ def handle_console_output_details(listbox_details, message):
     # listbox.yview(tk.END)  # Scroll to the end of the listbox
     listbox_details.insert(tk.END, message)
 
-def account_list(frame, index, condition=False):
+def account_list(frame, index, condition=False, clear_one = False):
     file_mail_password = f"Window{index}/mail_password_{index}.csv"
     json_file_path = os.path.join(parent_directory, file_mail_password)
     if os.path.exists(json_file_path):
@@ -2286,7 +2303,10 @@ def submit_form(form_data, option, index, frame, listbox,listbox_details, main_w
                         if json_file_path:
                             ccsv_file_path = os.path.join(parent_directory, file_mail_password)
                             smtp_config_data = read_smtp_config_csv(ccsv_file_path)
-                        
+                            
+                            if not smtp_config_data:
+                                # If SMTP config data is empty, break out of the loop
+                                break
 
                     if attachmentType == "Alpha Numeric":
                         filename = str(generate_random_alphanumeric())
@@ -2845,7 +2865,7 @@ def send_mail(option, name, email, emailId, password, sender_name, description_t
                 # Quit the SMTP session
                 mailserver.quit()
                 print(F'Message Id: {email} , No : {count}')
-                message_details = f'Successfully send mail to this Id: {email} , No : {count}'
+                message_details = f'Successfully send mail to this Id: {email} , No : {count}, by : {smtp_username}'
                 handle_console_output_details(listbox_details, message_details)
                 message = f"{count}/{total_mails}"
                 handle_console_output(listbox, message)
@@ -2966,6 +2986,8 @@ def delete_smtp_data_csv(username, password, index, frame, listbox_details):
         writer = csv.writer(file)
         writer.writerow(header)
         writer.writerows(filtered_data)
+
+    if any(row[username_index] != username or row[password_index] != password for row in filtered_data):
         account_list(frame, index)
 
     print("Entry removed successfully.")
@@ -3084,41 +3106,46 @@ def paypal_form(root, option, index, main_window):
     your_email_text = ttk.Entry(frame, width=60)
     your_email_text.grid(row=8, column=2, columnspan=2,  pady=5, padx=5, sticky="ew")
 
-    description_label = ttk.Label(frame,foreground="white", background="#333333", text="Description:").grid(row=9, column=0, pady=5, sticky=tk.W)
+    amount_title = ttk.Label(frame,foreground="white", background="#333333",text="Ammount:").grid(row=9, column=0, columnspan=2,  pady=5, sticky=tk.W)
+    amount = ttk.Entry(frame, width=120)
+    amount.grid(row=10, column=0, columnspan=4,  pady=5, padx=5, sticky="ew")
+
+    description_label = ttk.Label(frame,foreground="white", background="#333333", text="Description:").grid(row=11, column=0, pady=5, sticky=tk.W)
 
     description_text = tk.Text(frame, height=5, width=120)
-    description_text.grid(row=10, column=0, columnspan=4,  rowspan=2, pady=5, sticky="ew")
+    description_text.grid(row=12, column=0, columnspan=4,  rowspan=2, pady=5, sticky="ew")
 
     def on_paypal_submit_button_click():
         global stop_flag
         stop_flag = False
-        form_data = get_paypal_form_data(client_id_text, client_secret_text, email_text, subject_text, your_email_text, description_text)
-        threading.Thread(target=send_invoices_batch, args=(form_data, option, index, frame, main_window, listbox, listbox_details)).start()
+        form_data = get_paypal_form_data(client_id_text, client_secret_text, email_text, subject_text, your_email_text, description_text, amount)
+        threading.Thread(target=send_invoices_batch, args=(form_data, option, index, frame, main_window, listbox, listbox_details, amount)).start()
 
     submit_button = ctk.CTkButton(frame, text="Start", command=lambda: on_paypal_submit_button_click())
-    submit_button.grid(row=13,  column=0, pady=5, sticky="ew")
+    submit_button.grid(row=15,  column=0, pady=5, sticky="ew")
     listbox = ttk.Label(frame, foreground="red",  background="#333333", text="")
-    listbox.grid(row=13, column=1, pady=5, sticky=tk.W)
+    listbox.grid(row=15, column=1, pady=5, sticky=tk.W)
     listbox_details = tk.Listbox(frame, height=10, width=120)
-    listbox_details.grid(row=14, column=0, rowspan=3, columnspan=4, pady=10, sticky="ew")
+    listbox_details.grid(row=16, column=0, rowspan=3, columnspan=4, pady=10, sticky="ew")
 
     return frame
 
-def get_paypal_form_data(client_id_text, client_secret_text, email_text, subject_text, your_email_text, description_text):
+def get_paypal_form_data(client_id_text, client_secret_text, email_text, subject_text, your_email_text, description_text, amount):
     form_data = {
         'client_id_text' : client_id_text.get(),
         'client_secret_text' : client_secret_text.get(),
         'email_text' : email_text.get("1.0", tk.END),
         'subject_text' : subject_text.get(),
         'your_email_text' : your_email_text.get(),
-        'description_text' : description_text.get("1.0", tk.END)
+        'description_text' : description_text.get("1.0", tk.END),
+        'amount' : amount.get()
     }
 
     return form_data
 
 import paypalrestsdk
 
-def send_invoices_batch(form_data, option, index, frame, main_window, listbox, listbox_details):
+def send_invoices_batch(form_data, option, index, frame, main_window, listbox, listbox_details, amount):
     print(form_data)
 
     client_id_text = form_data['client_id_text']
@@ -3127,6 +3154,7 @@ def send_invoices_batch(form_data, option, index, frame, main_window, listbox, l
     subject_text = form_data['subject_text']
     your_email_text = form_data['your_email_text']
     description_text = form_data['description_text']
+    amount = form_data['amount']
 
     paypalrestsdk.configure({
         "mode": "live",  # sandbox or live
@@ -3168,7 +3196,7 @@ def send_invoices_batch(form_data, option, index, frame, main_window, listbox, l
     # Construct and store Invoice objects for each email
     total_mails = len(mails)
     for email in mails:
-        invoice = construct_invoice(email, description_text, subject_text, your_email_text)
+        invoice = construct_invoice(email, description_text, subject_text, your_email_text, amount)
         print(invoice)
         invoices.append(invoice)
     count = 0
@@ -3235,7 +3263,7 @@ def send_invoices_batch(form_data, option, index, frame, main_window, listbox, l
             message_details = f"Request Error: {e}"
             handle_console_output_details(listbox_details, message_details)
 
-def construct_invoice(email, note, subject_text, your_email_text):
+def construct_invoice(email, note, subject_text, your_email_text, amount):
     # Create an Invoice object using paypalrestsdk
     invoice = paypalrestsdk.Invoice({
         "billing_info": [{
@@ -3246,7 +3274,22 @@ def construct_invoice(email, note, subject_text, your_email_text):
         "merchant_info": {
             "email": your_email_text,  # Replace with your PayPal business account email
         },
+        'total_amount': {
+            'currency': 'USD',
+            'value': int(amount),  # Replace '10.00' with the actual total amount
+        },
+        "items": [{
+                "name": "Item",
+                "quantity": 1,
+                "unit_price": {
+                    "currency": "USD",
+                    "value": int(amount),
+                }
+            }],
+        
+
     })
+
 
     return invoice
 

@@ -5,7 +5,7 @@ a = Analysis(
     ['Brahmastra-Mailer.py'],
     pathex=[],
     binaries=[],
-    datas=[('C:/Users/David/Desktop/brahmastra/bulk_mail_software/w/wkhtmltopdf.exe', 'w'), ('C:/Users/David/Desktop/brahmastra/bulk_mail_software/w/wkhtmltoimage.exe', 'w'), ('C:/Users/David/Desktop/brahmastra/bulk_mail_software/images/logo.ico', '.'), ('C:/Users/David/Desktop/brahmastra/bulk_mail_software/gmass.txt', '.'), ('C:/Users/David/Desktop/brahmastra/bulk_mail_software/test_password.csv', '.'), ('C:/Users/David/Desktop/brahmastra/bulk_mail_software/images', 'images')],
+    datas=[('C:/Users/David/Desktop/brahmastra/bulk_mail_software/w/wkhtmltopdf.exe', 'w'), ('C:/Users/David/Desktop/brahmastra/bulk_mail_software/w/wkhtmltoimage.exe', 'w'), ('C:/Users/David/Desktop/brahmastra/bulk_mail_software/images/logo.ico', 'images'), ('C:/Users/David/Desktop/brahmastra/bulk_mail_software/images/logo.ico', '.'), ('C:/Users/David/Desktop/brahmastra/bulk_mail_software/images', 'images'), ('C:/Users/David/Desktop/brahmastra/bulk_mail_software/gmass.txt', '.'), ('C:/Users/David/Desktop/brahmastra/bulk_mail_software/test_password.csv', '.')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -34,4 +34,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    icon=['C:\\Users\\David\\Desktop\\brahmastra\\bulk_mail_software\\images\\logo.ico'],
 )
